@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - equirectangular panorama</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				color: #ffffff;
+				padding: 5px;
+				font-family:Monospace;
+				font-size:13px;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			a {
+				color: #ffffff;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+
+		<script src="../build/three.js"></script>
+		<script src="js/controls/OrbitControls.js"></script>
+
+		<script src="../examples/js/libs/dat.gui.min.js"></script>
+
+		<script>
+
+			
+			var camera, scene, controls, renderer;
+
+			var texCube;
+			var camCube, sceneCube;
+
+
+			init();
+			//render();
+			animate();
+			
+
+
+			function init() {
+
+				var container, planet, shader, uniforms;
+
+
+
+				container = document.getElementById( 'container' );
+				renderer = new THREE.WebGLRenderer({ alpha: true });
+				renderer.autoClear = false;//MUst turn it off if you want add multi renders in same buffer
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
+				camera.position.z = 100;
+				//camera.target = new THREE.Vector3( 0, 0, 0 );
+
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls.enableDamping = true;
+				controls.dampingFactor = 0.3;
+				controls.enableZoom = true;
+				controls.enablePan = false;
+
+				scene = new THREE.Scene();
+
+				planet = new THREE.SphereGeometry( 10, 60, 40 );
+
+				shader = THREE.ShaderLib[ "AS_EARTHSURF" ];
+				uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+				//uniforms.tSampler.value = LLTex;
+				//uniforms.nFace.value = 0;
+
+				/*
+				v3Translate: { value: new Vector3(0,0,0) },
+				v3LightPos: { value: new Vector3(0,0,0) },
+				v3InvWavelength: { value: new Vector3(0,0,0) },
+				fOuterRadius: { value: 1.0 },
+				fOuterRadius2: { value: 1.0 },
+				fInnerRadius: { value: 1.0 },
+				fInnerRadius2: { value: 1.0 },
+				fKrESun: { value: 1.0},
+				fKmESun: { value: 1.0 },
+				fKr4PI: { value: 1.0 },
+				fKm4PI: { value: 1.0 },
+				fScale: { value: 1.0 },
+				fScaleDepth: { value: 0 },
+				fScaleOverScaleDepth: { value: 1 },
+				fHdrExposure: { value: 1.0 }
+				*/
+
+
+				var material = new THREE.ShaderMaterial( {
+
+					uniforms: uniforms,
+					vertexShader: shader.vertexShader,
+					fragmentShader: shader.fragmentShader
+
+				} );
+
+				/*var material = new THREE.MeshBasicMaterial( {
+					map: new THREE.TextureLoader().load( 'textures/2294472375_24a3b8ef46_o.jpg' )
+				} );*/
+				var mesh = new THREE.Mesh( planet, material );
+				scene.add( mesh );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				//document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				//document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+
+
+
+			function animate() {
+				requestAnimationFrame( animate );
+				//if (updateTex == true) update2();
+				update();
+
+			}
+
+
+
+			function update() {
+				controls.update();
+				renderer.render( scene, camera );
+			}
+
+
+		</script>
+	</body>
+</html>
+
+
+
