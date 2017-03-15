@@ -38,6 +38,24 @@
 
 		<script>
 
+			var planetShaderInfo  = {
+				v3Translate: new THREE.Vector3(0,0,0),
+				v3LightDir: new THREE.Vector3(1,0,0),
+				v3InvWavelength: new THREE.Vector3(0,0,0),
+				fOuterRadius: 1.0,
+				fOuterRadius2: 1.0,
+				fInnerRadius: 1.0,
+				fInnerRadius2: 1.0,
+				fKrESun: 1.0,
+				fKmESun: 1.0 ,
+				fKr4PI: 1.0,
+				fKm4PI: 1.0,
+				fScale: 1.0,
+				fScaleDepth: 0.0,
+				fScaleOverScaleDepth: 1.0,
+				fHdrExposure: 1.0
+			};
+
 			
 			var camera, scene, controls, renderer;
 
@@ -45,10 +63,62 @@
 			var camCube, sceneCube;
 
 
-			init();
+			
+
+			var m_fInnerRadius = 1.0;           // Radius of the ground sphere 1:1.025
+		    var m_fOuterRadius = 1.025;
+
+		    ///////////////////////////////////////////////
+		    var m_nSample = 1;
+		    var m_fHdrExposure = 0.0;
+		    var m_fAttenRatio = 0.25;
+		    var m_v3WaveLength = new THREE.Vector3(0.65,0.57,0.475); // Wave length of sun light
+		    var m_fESun = 20.0;            // Sun brightness constant
+		    var m_fSurfESun = 13.0;
+		    var m_fKr = 0.0025;            // Rayleigh scattering constant
+		    var m_fKm = 0.0010;            // Mie scattering constant
+		    var m_fG = -0.750;             // The Mie phase asymmetry factor, must be between 0.999 to -0.999
+		    var m_fDiffoffset = 0.0;
+		    var m_fCloudMoveSpeed = 0.0;
+		    // The scale depth (i.e. the altitude at which the atmosphere's average density is found)
+		    var m_scaleDepth = 0.25; 
+		    var m_hasFlexRate = false;
+		    var m_hasCO = false;
+		    var m_fRatio = 1.0;
+
+		    init();
 			//render();
 			animate();
+
+			function setupPlanet(){
+				var v3InvWaveLength4 = new THREE.Vector3(1.0 / Math.pow(m_v3WaveLength.x, 4.0), 1.0 / Math.pow(m_v3WaveLength.y, 4.0), 1.0 / Math.pow(m_v3WaveLength.z, 4.0));
+        		var fScale = 1.0 / (m_fOuterRadius - m_fInnerRadius);
+        		//float fScale = m_fInnerRadius / (m_fOuterRadius - m_fInnerRadius);
+
+        		//planetShaderInfo.v3Translate = ;
+        		planetShaderInfo.v3LightDir = new THREE.Vector3(1,0.5,-0.3).normalize();
+				planetShaderInfo.v3InvWavelength = v3InvWaveLength4;
+				planetShaderInfo.fOuterRadius = m_fOuterRadius;
+				planetShaderInfo.fOuterRadius2 = m_fOuterRadius*m_fOuterRadius;
+				planetShaderInfo.fInnerRadius = m_fInnerRadius;
+				planetShaderInfo.fInnerRadius2 = m_fInnerRadius*m_fInnerRadius;
+				planetShaderInfo.fKrESun = m_fKr*m_fESun;
+				planetShaderInfo.fKmESun = m_fKm*m_fESun;
+				planetShaderInfo.fKr4PI = m_fKr*4.0*Math.PI;
+				planetShaderInfo.fKm4PI = m_fKm*4.0*Math.PI;
+				planetShaderInfo.fScale = fScale;
+				planetShaderInfo.fScaleDepth = m_scaleDepth;
+				planetShaderInfo.fScaleOverScaleDepth = fScale/m_scaleDepth;
+				planetShaderInfo.fHdrExposure = m_fHdrExposure;
+
+			}
 			
+
+
+
+
+
+
 
 
 			function init() {
@@ -65,7 +135,7 @@
 				container.appendChild( renderer.domElement );
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
-				camera.position.z = 100;
+				camera.position.z = 10;
 				//camera.target = new THREE.Vector3( 0, 0, 0 );
 
 				controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -76,30 +146,36 @@
 
 				scene = new THREE.Scene();
 
-				planet = new THREE.SphereGeometry( 10, 60, 40 );
+				planet = new THREE.SphereGeometry( m_fInnerRadius, 60, 40 );
 
 				shader = THREE.ShaderLib[ "AS_EARTHSURF" ];
 				uniforms = THREE.UniformsUtils.clone( shader.uniforms );
 				//uniforms.tSampler.value = LLTex;
 				//uniforms.nFace.value = 0;
+				//planetShaderInfo.v3Translate = .position
+				//planetShaderInfo.v3LightPos = ;
+				setupPlanet();
 
-				/*
-				v3Translate: { value: new Vector3(0,0,0) },
-				v3LightPos: { value: new Vector3(0,0,0) },
-				v3InvWavelength: { value: new Vector3(0,0,0) },
-				fOuterRadius: { value: 1.0 },
-				fOuterRadius2: { value: 1.0 },
-				fInnerRadius: { value: 1.0 },
-				fInnerRadius2: { value: 1.0 },
-				fKrESun: { value: 1.0},
-				fKmESun: { value: 1.0 },
-				fKr4PI: { value: 1.0 },
-				fKm4PI: { value: 1.0 },
-				fScale: { value: 1.0 },
-				fScaleDepth: { value: 0 },
-				fScaleOverScaleDepth: { value: 1 },
-				fHdrExposure: { value: 1.0 }
-				*/
+				//uniforms.v3CamPos.value = camera.position;
+
+				uniforms.v3Translate.value = planetShaderInfo.v3Translate;
+				uniforms.v3LightPos.value = planetShaderInfo.v3LightPos;
+				uniforms.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;
+				uniforms.fOuterRadius.value = planetShaderInfo.fOuterRadius;
+				uniforms.fOuterRadius2.value = planetShaderInfo.fOuterRadius2;
+				uniforms.fInnerRadius.value = planetShaderInfo.fInnerRadius;
+				uniforms.fInnerRadius2.value = planetShaderInfo.fInnerRadius2;
+				uniforms.fKrESun.value = planetShaderInfo.fKrESun;
+				uniforms.fKmESun.value = planetShaderInfo.fKmESun;
+				uniforms.fKr4PI.value = planetShaderInfo.fKr4PI;
+				uniforms.fKm4PI.value = planetShaderInfo.fKm4PI;
+				uniforms.fScale.value = planetShaderInfo.fScale;
+				uniforms.fScaleDepth.value = planetShaderInfo.fScaleDepth;
+				uniforms.fScaleOverScaleDepth.value = planetShaderInfo.fScaleOverScaleDepth;
+				uniforms.fHdrExposure.value = planetShaderInfo.fHdrExposure;
+
+				uniforms._ESun.value = m_fESun;
+
 
 
 				var material = new THREE.ShaderMaterial( {
