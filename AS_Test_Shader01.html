@@ -65,8 +65,8 @@
 
 			
 
-			var m_fInnerRadius = 1.0;           // Radius of the ground sphere 1:1.025
-		    var m_fOuterRadius = 1.025;
+			var m_fInnerRadius = 10.0;           // Radius of the ground sphere 1:1.025
+		    var m_fOuterRadius = 10.25;
 
 		    ///////////////////////////////////////////////
 		    var m_nSample = 1;
@@ -96,7 +96,7 @@
         		//float fScale = m_fInnerRadius / (m_fOuterRadius - m_fInnerRadius);
 
         		//planetShaderInfo.v3Translate = ;
-        		planetShaderInfo.v3LightDir = new THREE.Vector3(1,0.5,-0.3).normalize();
+        		planetShaderInfo.v3LightDir = new THREE.Vector3(1,0.5,-0.01).normalize();
 				planetShaderInfo.v3InvWavelength = v3InvWaveLength4;
 				planetShaderInfo.fOuterRadius = m_fOuterRadius;
 				planetShaderInfo.fOuterRadius2 = m_fOuterRadius*m_fOuterRadius;
@@ -135,7 +135,7 @@
 				container.appendChild( renderer.domElement );
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
-				camera.position.z = 10;
+				camera.position.z = 50;
 				//camera.target = new THREE.Vector3( 0, 0, 0 );
 
 				controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -159,7 +159,7 @@
 				//uniforms.v3CamPos.value = camera.position;
 
 				uniforms.v3Translate.value = planetShaderInfo.v3Translate;
-				uniforms.v3LightPos.value = planetShaderInfo.v3LightPos;
+				uniforms.v3LightDir.value = planetShaderInfo.v3LightDir;
 				uniforms.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;
 				uniforms.fOuterRadius.value = planetShaderInfo.fOuterRadius;
 				uniforms.fOuterRadius2.value = planetShaderInfo.fOuterRadius2;
