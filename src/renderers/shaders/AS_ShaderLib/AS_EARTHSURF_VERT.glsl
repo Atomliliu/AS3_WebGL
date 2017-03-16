@@ -122,7 +122,7 @@ void main() {
 	vUv = uv;
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );// = pos
 
-	vC0 = v3FrontColor * (v3InvWavelength * fKrESun + fKmESun);
+	vC0 = v3FrontColor * (v3InvWavelength * vec3(fKrESun) + vec3(fKmESun));
 
 	vC1 = v3Attenuate;//? lerp(vec3(1.0), v3Attenuate, _Ratio);
 	vT0 = vec3(1.0);//pow(saturate(dot(v3LightDir, (modelMatrix*vec4(normal,1.0)).xyz)+vec3(0.175)),0.75);
