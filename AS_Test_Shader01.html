@@ -53,7 +53,9 @@
 				fScale: 1.0,
 				fScaleDepth: 0.0,
 				fScaleOverScaleDepth: 1.0,
-				fHdrExposure: 1.0
+				fHdrExposure: 1.0,
+				fG: 0.0,
+				fG2: 0.0
 			};
 
 			
@@ -110,6 +112,8 @@
 				planetShaderInfo.fScaleDepth = m_scaleDepth;
 				planetShaderInfo.fScaleOverScaleDepth = fScale/m_scaleDepth;
 				planetShaderInfo.fHdrExposure = m_fHdrExposure;
+				planetShaderInfo.fG = m_fG;
+				planetShaderInfo.fG2 = m_fG*m_fG;
 
 			}
 			
@@ -123,7 +127,7 @@
 
 			function init() {
 
-				var container, planet, shader, uniforms;
+				var container, planet, atmosphere, shader, uniforms;
 
 
 
@@ -147,50 +151,88 @@
 				scene = new THREE.Scene();
 
 				planet = new THREE.SphereGeometry( m_fInnerRadius, 60, 40 );
+				atmosphere = new THREE.SphereGeometry( m_fOuterRadius, 60, 40 );
 
-				shader = THREE.ShaderLib[ "AS_EARTHSURF" ];
-				uniforms = THREE.UniformsUtils.clone( shader.uniforms );
-				//uniforms.tSampler.value = LLTex;
-				//uniforms.nFace.value = 0;
-				//planetShaderInfo.v3Translate = .position
-				//planetShaderInfo.v3LightPos = ;
+				shaderPlanet = THREE.ShaderLib[ "AS_EARTHSURF" ];
+				uniformsPlanet = THREE.UniformsUtils.clone( shaderPlanet.uniforms );
+
+				shaderAtom = THREE.ShaderLib[ "AS_EARTHATOM" ];
+				uniformsAtom = THREE.UniformsUtils.clone( shaderAtom.uniforms );
+
 				setupPlanet();
 
 				//uniforms.v3CamPos.value = camera.position;
 
-				uniforms.v3Translate.value = planetShaderInfo.v3Translate;
-				uniforms.v3LightDir.value = planetShaderInfo.v3LightDir;
-				uniforms.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;
-				uniforms.fOuterRadius.value = planetShaderInfo.fOuterRadius;
-				uniforms.fOuterRadius2.value = planetShaderInfo.fOuterRadius2;
-				uniforms.fInnerRadius.value = planetShaderInfo.fInnerRadius;
-				uniforms.fInnerRadius2.value = planetShaderInfo.fInnerRadius2;
-				uniforms.fKrESun.value = planetShaderInfo.fKrESun;
-				uniforms.fKmESun.value = planetShaderInfo.fKmESun;
-				uniforms.fKr4PI.value = planetShaderInfo.fKr4PI;
-				uniforms.fKm4PI.value = planetShaderInfo.fKm4PI;
-				uniforms.fScale.value = planetShaderInfo.fScale;
-				uniforms.fScaleDepth.value = planetShaderInfo.fScaleDepth;
-				uniforms.fScaleOverScaleDepth.value = planetShaderInfo.fScaleOverScaleDepth;
-				uniforms.fHdrExposure.value = planetShaderInfo.fHdrExposure;
+				uniformsPlanet.v3Translate.value = planetShaderInfo.v3Translate;
+				uniformsPlanet.v3LightDir.value = planetShaderInfo.v3LightDir;
+				uniformsPlanet.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;
+				uniformsPlanet.fOuterRadius.value = planetShaderInfo.fOuterRadius;
+				uniformsPlanet.fOuterRadius2.value = planetShaderInfo.fOuterRadius2;
+				uniformsPlanet.fInnerRadius.value = planetShaderInfo.fInnerRadius;
+				uniformsPlanet.fInnerRadius2.value = planetShaderInfo.fInnerRadius2;
+				uniformsPlanet.fKrESun.value = planetShaderInfo.fKrESun;
+				uniformsPlanet.fKmESun.value = planetShaderInfo.fKmESun;
+				uniformsPlanet.fKr4PI.value = planetShaderInfo.fKr4PI;
+				uniformsPlanet.fKm4PI.value = planetShaderInfo.fKm4PI;
+				uniformsPlanet.fScale.value = planetShaderInfo.fScale;
+				uniformsPlanet.fScaleDepth.value = planetShaderInfo.fScaleDepth;
+				uniformsPlanet.fScaleOverScaleDepth.value = planetShaderInfo.fScaleOverScaleDepth;
+				uniformsPlanet.fHdrExposure.value = planetShaderInfo.fHdrExposure;
 
-				uniforms._ESun.value = m_fESun;
+				uniformsPlanet._ESun.value = m_fESun;
 
 
 
-				var material = new THREE.ShaderMaterial( {
 
-					uniforms: uniforms,
-					vertexShader: shader.vertexShader,
-					fragmentShader: shader.fragmentShader
+
+				uniformsAtom.v3Translate.value = planetShaderInfo.v3Translate;
+				uniformsAtom.v3LightDir.value = planetShaderInfo.v3LightDir;
+				uniformsAtom.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;
+				uniformsAtom.fOuterRadius.value = planetShaderInfo.fOuterRadius;
+				uniformsAtom.fOuterRadius2.value = planetShaderInfo.fOuterRadius2;
+				uniformsAtom.fInnerRadius.value = planetShaderInfo.fInnerRadius;
+				uniformsAtom.fInnerRadius2.value = planetShaderInfo.fInnerRadius2;
+				uniformsAtom.fKrESun.value = planetShaderInfo.fKrESun;
+				uniformsAtom.fKmESun.value = planetShaderInfo.fKmESun;
+				uniformsAtom.fKr4PI.value = planetShaderInfo.fKr4PI;
+				uniformsAtom.fKm4PI.value = planetShaderInfo.fKm4PI;
+				uniformsAtom.fScale.value = planetShaderInfo.fScale;
+				uniformsAtom.fScaleDepth.value = planetShaderInfo.fScaleDepth;
+				uniformsAtom.fScaleOverScaleDepth.value = planetShaderInfo.fScaleOverScaleDepth;
+				uniformsAtom.fHdrExposure.value = planetShaderInfo.fHdrExposure;
+				uniformsAtom.fG.value = planetShaderInfo.fG;
+				uniformsAtom.fG2.value = planetShaderInfo.fG2;
+
+				uniformsAtom._ESun.value = m_fESun;
+
+
+
+				var materialPlanet = new THREE.ShaderMaterial( {
+
+					uniforms: uniformsPlanet,
+					vertexShader: shaderPlanet.vertexShader,
+					fragmentShader: shaderPlanet.fragmentShader
+
+				} );
+
+				var materialAtom = new THREE.ShaderMaterial( {
+
+					uniforms: uniformsAtom,
+					vertexShader: shaderAtom.vertexShader,
+					fragmentShader: shaderAtom.fragmentShader
 
 				} );
 
 				/*var material = new THREE.MeshBasicMaterial( {
 					map: new THREE.TextureLoader().load( 'textures/2294472375_24a3b8ef46_o.jpg' )
 				} );*/
-				var mesh = new THREE.Mesh( planet, material );
-				scene.add( mesh );
+				var meshPlanet = new THREE.Mesh( planet, materialPlanet );
+				scene.add( meshPlanet );
+
+				//skyBoxCube.applyMatrix( new THREE.Matrix4().makeScale( 1, 1,  -1 ) );
+				atmosphere.scale(1, 1, -1);
+				var meshAtom = new THREE.Mesh( atmosphere, materialAtom );
+				scene.add( meshAtom );
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
