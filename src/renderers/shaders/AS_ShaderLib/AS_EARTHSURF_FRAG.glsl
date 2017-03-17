@@ -20,7 +20,7 @@ void main() {
 	//col = IN.c0 + lerp(col.rgb, texCloudCol.rgb * diff, texCloudCol.a);
 	col = vC0 + col.rgb ;
 	//col = vec3(0.5);
-	col = vC1;
+	col = vC0;
 	
 	gl_FragColor = vec4(col, 1.0);
 	//fColor.rgb *= SetEV(fHdrExposure);
