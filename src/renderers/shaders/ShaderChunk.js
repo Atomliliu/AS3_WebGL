@@ -117,6 +117,9 @@ import shadow_vert from './ShaderLib/shadow_vert.glsl';
 import AS_EARTHSURF_VERT from './AS_ShaderLib/AS_EARTHSURF_VERT.glsl';
 import AS_EARTHSURF_FRAG from './AS_ShaderLib/AS_EARTHSURF_FRAG.glsl';
 
+import AS_EARTHATOM_VERT from './AS_ShaderLib/AS_EARTHATOM_VERT.glsl';
+import AS_EARTHATOM_FRAG from './AS_ShaderLib/AS_EARTHATOM_FRAG.glsl';
+
 //////////////////////////////////////////////////////
 
 export var ShaderChunk = {
@@ -216,6 +219,8 @@ export var ShaderChunk = {
 	AS_EARTHSURF_VERT: AS_EARTHSURF_VERT,
 	AS_EARTHSURF_FRAG: AS_EARTHSURF_FRAG,
 
+	AS_EARTHATOM_VERT: AS_EARTHATOM_VERT,
+	AS_EARTHATOM_FRAG: AS_EARTHATOM_FRAG,
 
 
 	/////////////////////////////////////////////////////
