@@ -25,22 +25,8 @@ uniform float fScale;			// 1 / (fOuterRadius - fInnerRadius)
 uniform float fScaleDepth;		// The scale depth (i.e. the altitude at which the atmosphere's average density is found)
 uniform float fScaleOverScaleDepth;	// fScale / fScaleDepth
 uniform float fHdrExposure;		// HDR exposure
-uniform float g;				// The Mie phase asymmetry factor
-uniform float g2;				// The Mie phase asymmetry factor squared
-
-/*float scale(float fCos, float fScale)
-{
-	float x = 1.0 - fCos;
-	return fScale * exp(-0.00287 + x*(0.459 + x*(3.83 + x*(-6.80 + x*5.25))));
-}
-
-float getNearIntersection(vec3 v3Pos, vec3 v3Ray, float fDistance2, float fRadius2)
-{
-	float B = 2.0 * dot(v3Pos, v3Ray);
-	float C = fDistance2 - fRadius2;
-	float fDet = max(0.0, B*B - 4.0 * C);
-	return 0.5 * (-B - sqrt(fDet));
-}*/
+uniform float fG;				// The Mie phase asymmetry factor
+uniform float fG2;				// The Mie phase asymmetry factor squared
 
 void main() {
 	//Vertx 2 Fragment
@@ -67,9 +53,10 @@ void main() {
 	vec3 v3Start = v3CameraPos;
 	float fHeight;
 	float fDepth;
-	float fCameraAngle;
-	//float fLightAngle;
+
 	float fStartOffset;
+	float fStartAngle;
+
 
 
 	if(fNear <= 0.0)//Camera inside atmosphere
@@ -107,16 +94,17 @@ void main() {
 	// Now loop through the sample rays
 	vec3 v3FrontColor = vec3(0.0, 0.0, 0.0);
 	vec3 v3Attenuate;
+	float fCameraAngle;
+	float fLightAngle;
 	for(int i=0; i<nSamples; i++)
 	{
 		fHeight = length(v3SamplePoint);
-		float fDepth2 = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
-		//float fScatter = fDepth2*fTemp - fCameraOffset;
-		float fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
-		float fCameraAngle = dot(v3Ray, v3SamplePoint) / fHeight;
-		float fScatter = (fStartOffset + fDepth2*(scale(fLightAngle,fScaleDepth) - scale(fCameraAngle,fScaleDepth)));
+		fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
+		fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
+		fCameraAngle = dot(v3Ray, v3SamplePoint) / fHeight;
+		float fScatter = (fStartOffset + fDepth*(scale(fLightAngle,fScaleDepth) - scale(fCameraAngle,fScaleDepth)));
 		v3Attenuate = exp(vec3(-fScatter) * (v3InvWavelength * vec3(fKr4PI) + vec3(fKm4PI)));
-		v3FrontColor += v3Attenuate * vec3(fDepth2 * fScaledLength);
+		v3FrontColor += v3Attenuate * vec3(fDepth * fScaledLength);
 		v3SamplePoint += v3SampleRay;
 	}
 
@@ -131,8 +119,6 @@ void main() {
 
 	vC1 = v3FrontColor * vec3(fKmESun);
 	vT0 = v3CameraPos - v3Pos;//pow(saturate(dot(v3LightDir, (modelMatrix*vec4(normal,1.0)).xyz)+vec3(0.175)),0.75);
-
-
 
 }
 
