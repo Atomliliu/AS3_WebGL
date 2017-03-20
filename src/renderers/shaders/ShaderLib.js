@@ -199,6 +199,70 @@ var ShaderLib = {
 
 	},
 	//////////////////////////////////////////////////
+	AS_PLANETATOM: {
+
+		uniforms: {
+			tCube: { value: null },
+			_ESun: { value: 1 },
+			
+			nSamples: { value: 8 },
+			nDepthSamples: { value: 8 },
+			v3Translate: { value: new Vector3(0,0,0) },
+			v3LightDir: { value: new Vector3(0,0,0) },
+			v3InvWavelength: { value: new Vector3(0,0,0) },
+			fOuterRadius: { value: 1.0 },
+			fOuterRadius2: { value: 1.0 },
+			fInnerRadius: { value: 1.0 },
+			fInnerRadius2: { value: 1.0 },
+			fKrESun: { value: 1.0},
+			fKmESun: { value: 1.0 },
+			fKr4PI: { value: 1.0 },
+			fKm4PI: { value: 1.0 },
+			fScale: { value: 1.0 },
+			fScaleDepth: { value: 0 },
+			fScaleOverScaleDepth: { value: 1 },
+			fHdrExposure: { value: 1.0 },
+			fG: {value: 0.0},
+			fG2: {value: 0.0}
+
+		},
+
+		vertexShader: ShaderChunk.AS_PLANETATOM_VERT,
+		fragmentShader: ShaderChunk.AS_PLANETATOM_FRAG
+
+	},
+
+	AS_PLANETSURF: {
+
+		uniforms: {
+			tCube: { value: null },
+			_ESun: { value: 1 },
+			
+			nSamples: { value: 8 },
+			nDepthSamples: { value: 8 },
+			v3Translate: { value: new Vector3(0,0,0) },
+			v3LightDir: { value: new Vector3(0,0,0) },
+			v3InvWavelength: { value: new Vector3(0,0,0) },
+			fOuterRadius: { value: 1.0 },
+			fOuterRadius2: { value: 1.0 },
+			fInnerRadius: { value: 1.0 },
+			fInnerRadius2: { value: 1.0 },
+			fKrESun: { value: 1.0},
+			fKmESun: { value: 1.0 },
+			fKr4PI: { value: 1.0 },
+			fKm4PI: { value: 1.0 },
+			fScale: { value: 1.0 },
+			fScaleDepth: { value: 0 },
+			fScaleOverScaleDepth: { value: 1 },
+			fHdrExposure: { value: 1.0 }
+
+		},
+
+		vertexShader: ShaderChunk.AS_PLANETSURF_VERT,
+		fragmentShader: ShaderChunk.AS_PLANETSURF_FRAG
+
+	},
+
 	AS_EARTHATOM: {
 
 		uniforms: {
