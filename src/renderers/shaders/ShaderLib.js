@@ -205,7 +205,7 @@ var ShaderLib = {
 			tCube: { value: null },
 			_ESun: { value: 1 },
 			
-			v3CamPos: { value: new Vector3(0,0,0) },
+			nSamples: { value: 8 },
 			v3Translate: { value: new Vector3(0,0,0) },
 			v3LightDir: { value: new Vector3(0,0,0) },
 			v3InvWavelength: { value: new Vector3(0,0,0) },
@@ -237,7 +237,7 @@ var ShaderLib = {
 			tCube: { value: null },
 			_ESun: { value: 1 },
 			
-			v3CamPos: { value: new Vector3(0,0,0) },
+			nSamples: { value: 8 },
 			v3Translate: { value: new Vector3(0,0,0) },
 			v3LightDir: { value: new Vector3(0,0,0) },
 			v3InvWavelength: { value: new Vector3(0,0,0) },

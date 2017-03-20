@@ -336,45 +336,6 @@ vec4 EncodeRGBM(vec3 rgb, float maxRange)
 //////////////////////////
 const int _MaxSample = 128;
 
-vec2 GetDepth(vec3 vP, vec3 vRay, float fF, float fScaleDepth, float fScale, float fR, float fR2, int dSamples)
-{
-	vec2 vDepth;
-	//_DSamples = _Samples;
-	// Next determine the length of each sample, scale the sample ray, and make sure position checks are at the center of a sample ray
-	float fSampleheight = length(vP);
-	float fSampleLength = fF / float(dSamples);
-	float fScaledLength = fSampleLength * fScale;
-	vec3 vSampleRay = vRay * fSampleLength;
-	// Density Ratio
-
-	vec3 inter = getIntersection(vP, vRay, dot(vP, vP), fR2);
-	
-	vDepth.x = getAltitude(fSampleheight, fR, fScaleDepth, fScale);
-
-	bool bVisible = (inter.x < 0 || (inter.y <= 0) && (inter.z <= 0));
-
-	if(!bVisible){
-		vDepth.x *= 0.1;
-	}
-
-
-	
-	p += vSampleRay * 0.5;
-
-	// Iterate through the samples to sum up the optical depth for the distance the ray travels through the atmosphere
-	float fDepth = 0.0;
-	for(int i=0; i < _MaxSample; i++)
-	{
-		if(i >= dSamples) break;
-		fDepth += getAltitude(length(p), fR, fScaleDepth, fScale);
-		p += vSampleRay;
-	}
-	fDepth *= fScaledLength;		
-	vDepth.y = fDepth;
-
-	return vDepth;
-}
-
 // The scale equation calculated by Vernier's Graphical Analysis
 float scale(float fCos, float fScale)
 {
@@ -428,6 +389,46 @@ vec3 getIntersection(vec3 v3Pos, vec3 v3Ray, float fDistance2, float fRadius2)
 
 	return vec3(fDet, (0.5 * (-B - sqrt(fDet))), (0.5 * (-B + sqrt(fDet))) );
 
+}
+
+
+vec2 GetDepth(vec3 vP, vec3 vRay, float fF, float fScaleDepth, float fScale, float fR, float fR2, int dSamples)
+{
+	vec2 vDepth;
+	//_DSamples = _Samples;
+	// Next determine the length of each sample, scale the sample ray, and make sure position checks are at the center of a sample ray
+	float fSampleheight = length(vP);
+	float fSampleLength = fF / float(dSamples);
+	float fScaledLength = fSampleLength * fScale;
+	vec3 vSampleRay = vRay * vec3(fSampleLength);
+	// Density Ratio
+
+	vec3 inter = getIntersection(vP, vRay, dot(vP, vP), fR2);
+	
+	vDepth.x = getAltitude(fSampleheight, fR, fScaleDepth, fScale);
+
+	bool bVisible = (inter.x < 0.0 || (inter.y <= 0.0) && (inter.z <= 0.0));
+
+	if(!bVisible){
+		vDepth.x *= 0.1;
+	}
+
+
+	
+	vP += vSampleRay * vec3(0.5);
+
+	// Iterate through the samples to sum up the optical depth for the distance the ray travels through the atmosphere
+	float fDepth = 0.0;
+	for(int i=0; i < _MaxSample; i++)
+	{
+		if(i >= dSamples) break;
+		fDepth += getAltitude(length(vP), fR, fScaleDepth, fScale);
+		vP += vSampleRay;
+	}
+	fDepth *= fScaledLength;		
+	vDepth.y = fDepth;
+
+	return vDepth;
 }
 
 

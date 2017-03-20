@@ -71,7 +71,7 @@
 		    var m_fOuterRadius = 10.25;
 
 		    ///////////////////////////////////////////////
-		    var m_nSample = 1;
+		    var m_nSamples = 16;
 		    var m_fHdrExposure = 0.0;
 		    var m_fAttenRatio = 0.25;
 		    var m_v3WaveLength = new THREE.Vector3(0.65,0.57,0.475); // Wave length of sun light
@@ -163,6 +163,7 @@
 
 				//uniforms.v3CamPos.value = camera.position;
 
+				uniformsPlanet.nSamples.value = m_nSamples;
 				uniformsPlanet.v3Translate.value = planetShaderInfo.v3Translate;
 				uniformsPlanet.v3LightDir.value = planetShaderInfo.v3LightDir;
 				uniformsPlanet.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;
@@ -184,7 +185,7 @@
 
 
 
-
+				uniformsAtom.nSamples.value = m_nSamples;
 				uniformsAtom.v3Translate.value = planetShaderInfo.v3Translate;
 				uniformsAtom.v3LightDir.value = planetShaderInfo.v3LightDir;
 				uniformsAtom.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;

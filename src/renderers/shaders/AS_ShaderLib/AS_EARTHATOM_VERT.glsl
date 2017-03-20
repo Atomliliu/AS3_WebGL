@@ -10,6 +10,7 @@ varying vec3 vC1;
 
 // vec3
 //uniform vec3 v3CamPos;
+uniform int nSamples;
 uniform vec3 v3Translate;		// The objects world pos
 uniform vec3 v3LightDir;		// The direction vector to the light source
 uniform vec3 v3InvWavelength; // 1 / pow(wavelength, 4) for the red, green, and blue channels
@@ -83,7 +84,7 @@ void main() {
 	float fCameraOffset = fDepth*fCameraScale;
 	float fTemp = (fLightScale + fCameraScale);*/
 	
-	const int nSamples = 8;
+	//const int nSamples = 8;
 
 	// Initialize the scattering loop variables
 	float fSampleLength = fFar / float(nSamples);
@@ -96,8 +97,9 @@ void main() {
 	vec3 v3Attenuate;
 	float fCameraAngle;
 	float fLightAngle;
-	for(int i=0; i<nSamples; i++)
+	for(int i=0; i<_MaxSample; i++)
 	{
+		if(i == nSamples) break;
 		fHeight = length(v3SamplePoint);
 		fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
 		fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
