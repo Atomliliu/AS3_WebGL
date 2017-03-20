@@ -9,7 +9,8 @@ varying vec3 vC1;
 
 
 // vec3
-//uniform vec3 v3CamPos;
+uniform int nSamples;
+uniform int nDepthSamples;
 uniform vec3 v3Translate;		// The objects world pos
 uniform vec3 v3LightDir;		// The direction vector to the light source
 uniform vec3 v3InvWavelength; // 1 / pow(wavelength, 4) for the red, green, and blue channels
@@ -31,7 +32,10 @@ uniform float fHdrExposure;		// HDR exposure
 void main() {
 	//Vertx 2 Fragment
 	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
-	
+	vWorldPosition = worldPosition.xyz;//? vec3
+
+	vUv = uv;
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );// = pos
 
 	//////////////////////////////////////////////////////////////////////////////
 
@@ -50,65 +54,111 @@ void main() {
 	
 	// Calculate the closest intersection of the ray with the outer atmosphere (which is the near point of the ray passing through the atmosphere)
 	float fNear = getNearIntersection(v3CameraPos, v3Ray, fCameraHeight2, fOuterRadius2);
+	float fF = getFarIntersection(v3CameraPos, v3Ray, fCameraHeight2, fOuterRadius2);
+				
+	bool bCameraAbove = true;
 	vec3 v3Start = v3CameraPos;
-	float fHeight;
-	float fDepth;
-	float fCameraAngle;
-	float fLightAngle;
+	vec2 v2CameraDepth=vec2(0,0);
+	vec2 v2LightDepth;
+	vec2 v2SampleDepth;
+
+	//float fHeight;
+	//float fDepth;
+	//float fCameraAngle;
+	//float fLightAngle;
 
 
 	if(fNear <= 0.0)//Camera inside atmosphere
 	{
-		fDepth = exp((fInnerRadius - fCameraHeight) * (1.0/fScaleDepth));
-		//fDepth = exp((fInnerRadius - fOuterRadius) / fScaleDepth);
-		fCameraAngle = dot(-v3Ray, v3Pos) / length(v3Pos);
-		fLightAngle = dot(v3LightDir, v3Pos) / length(v3Pos);
+		//bCameraInAtmosphere = true;
+		float fCameraHeight = length(v3CameraPos);
+		bCameraAbove = fCameraHeight >= length(v3Pos);
+		v2CameraDepth = GetDepth(v3CameraPos,v3Ray,fF,fScaleDepth, fScale, fInnerRadius, fInnerRadius2, nDepthSamples);
+		//vec2 GetDepth(vec3 vP, vec3 vRay, float fF, float fScaleDepth, float fScale, float fR, float fR2, int dSamples)
 	}
 	else//Camera outside atmosphere
 	{
-		v3Start = v3CameraPos + v3Ray * fNear;
-		fFar -= fNear;
-		fDepth = exp((fInnerRadius - fOuterRadius) / fScaleDepth);
-		//fDepth = exp((fInnerRadius - fCameraHeight) * (1.0/fScaleDepth));
-		fCameraAngle = dot(-v3Ray, v3Pos) / length(v3Pos);
-		fLightAngle = dot(v3LightDir, v3Pos) / length(v3Pos);
+		v3Start = v3CameraPos + v3Ray * fNear; // Move the camera up to the near intersection point
+		fFar -= fNear; 
 	}
 
+	// If the distance between the points on the ray is negligible, don't bother to calculate anything
+	if(fFar <= DELTA)
+	{
+		vT0=vec3(0);
+		vT1=vec3(0);
+		vC0=vec3(0);
+		vC1=vec3(0);
+		return;
+	}
 
-	// Calculate the ray's starting position, then calculate its scattering offset
-				
-	float fCameraScale = scale(fCameraAngle,fScaleDepth);
-	float fLightScale = scale(fLightAngle,fScaleDepth);
-	float fCameraOffset = fDepth*fCameraScale;
-	float fTemp = (fLightScale + fCameraScale);
+	// Surface sample
+	float fStartHeight = length(v3Pos);
+
+	float fSampleAngle;
+	if(bCameraAbove)
+	{
+		fSampleAngle = dot(-v3Ray, v3Pos) / vec3(fStartHeight);
+	}
+	else
+	{
+		fSampleAngle = dot(v3Ray, v3Pos) / vec3(fStartHeight);
+	}
 	
-	const int nSamples = 8;
 
 	// Initialize the scattering loop variables
+	//vec3 v3Sum = vec3(0,0,0);
 	float fSampleLength = fFar / float(nSamples);
 	float fScaledLength = fSampleLength * fScale;
 	vec3 v3SampleRay = v3Ray * vec3(fSampleLength);
+	// Start at the center of the first sample ray, and loop through each of the others
 	vec3 v3SamplePoint = v3Start + v3SampleRay * 0.5;
 
 	// Now loop through the sample rays
 	vec3 v3FrontColor = vec3(0.0, 0.0, 0.0);
 	vec3 v3Attenuate;
-	for(int i=0; i<nSamples; i++)
+	for(int i=0; i<_MaxSample; i++)
 	{
-		fHeight = length(v3SamplePoint);
-		fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
-		float fScatter = fDepth*fTemp - fCameraOffset;
-		v3Attenuate = exp(vec3(-fScatter) * (v3InvWavelength * vec3(fKr4PI) + vec3(fKm4PI)));
-		v3FrontColor += v3Attenuate * vec3(fDepth * fScaledLength);
+		if(i == nSamples) break;
+		float fFL = getFarIntersection(v3SamplePoint, v3LightDir, dot(v3SamplePoint,v3SamplePoint), fOuterRadius2);
+		v2LightDepth = GetDepth(v3SamplePoint,v3LightDir,fFL,fScaleDepth, fScale, fInnerRadius, fInnerRadius2, nDepthSamples);
+		// If no light light reaches this part of the atmosphere, no light is scattered in at this point
+		if(v2LightDepth.x < DELTA)
+		{
+			break;
+			//or continue;
+		}
+		// Get the density at this point, along with the optical depth from the light source to this point
+		float fDensity = fScaledLength * v2LightDepth.x;
+		float fDepth = v2LightDepth.y;
+
+		// If the camera is above the point we're shading, we calculate the optical depth from the sample point to the camera
+		// Otherwise, we calculate the optical depth from the camera to the sample point
+		v2SampleDepth = GetDepth(v3SamplePoint, -v3Ray, fF,fScaleDepth, fScale, fInnerRadius, fInnerRadius2, nDepthSamples);
+		if(bCameraAbove)
+		{
+			fDepth += (v2SampleDepth.x - v2CameraDepth.x);
+		}
+		else
+		{
+			fDepth += (v2CameraDepth.x - v2SampleDepth.x);
+		}
+
+		// Now multiply the optical depth by the attenuation factor for the sample ray
+		fDepth *= fKr4PI;
+
+		// Calculate the attenuation factor for the sample ray
+		v3Attenuation = exp(vec3(-fDepth.x) * v3InvWavelength - vec3(fDepth.xxx));
+		v3FrontColor += vec3(fDensity.x) * v3Attenuation;
+
+		// Move the position to the center of the next sample ray
 		v3SamplePoint += v3SampleRay;
+
 	}
 
 
 	///////////////////////////////////////OUT/////////////////////////////////////
-	vWorldPosition = worldPosition.xyz;//? vec3
-
-	vUv = uv;
-	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );// = pos
+	
 
 	vC0 = v3FrontColor * (v3InvWavelength * vec3(fKrESun) + vec3(fKmESun));
 
