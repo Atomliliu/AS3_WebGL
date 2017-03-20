@@ -334,7 +334,24 @@ vec4 EncodeRGBM(vec3 rgb, float maxRange)
 
 //Atmosphere Function Libs 
 //////////////////////////
+//#ifndef D_BIT
+#define D_BIT		0.0039215686274509803921568627451
+//#endif
+
+//#ifndef D_BIT2
+#define D_BIT2		1.5378700499807766243752402921953e-5
+//#endif
+
+//#ifndef D_BIT3
+#define D_BIT3		6.0308629411010848014715305576287e-8
+//#endif
+
+//#ifndef DELTA
+#define DELTA		1e-6f
+//#endif
+
 const int _MaxSample = 128;
+const int _MaxDepthSample = 64;
 
 // The scale equation calculated by Vernier's Graphical Analysis
 float scale(float fCos, float fScale)
@@ -419,7 +436,7 @@ vec2 GetDepth(vec3 vP, vec3 vRay, float fF, float fScaleDepth, float fScale, flo
 
 	// Iterate through the samples to sum up the optical depth for the distance the ray travels through the atmosphere
 	float fDepth = 0.0;
-	for(int i=0; i < _MaxSample; i++)
+	for(int i=0; i < _MaxDepthSample; i++)
 	{
 		if(i >= dSamples) break;
 		fDepth += getAltitude(length(vP), fR, fScaleDepth, fScale);
@@ -432,21 +449,7 @@ vec2 GetDepth(vec3 vP, vec3 vRay, float fF, float fScaleDepth, float fScale, flo
 }
 
 
-//#ifndef D_BIT
-#define D_BIT		0.0039215686274509803921568627451
-//#endif
 
-//#ifndef D_BIT2
-#define D_BIT2		1.5378700499807766243752402921953e-5
-//#endif
-
-//#ifndef D_BIT3
-#define D_BIT3		6.0308629411010848014715305576287e-8
-//#endif
-
-//#ifndef DELTA
-#define DELTA		1e-6f
-//#endif
 
 
 float DecodeRGBA2Float(vec4 vColor, float fMax)
