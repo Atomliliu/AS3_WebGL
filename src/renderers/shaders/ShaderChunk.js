@@ -120,6 +120,13 @@ import AS_EARTHSURF_FRAG from './AS_ShaderLib/AS_EARTHSURF_FRAG.glsl';
 import AS_EARTHATOM_VERT from './AS_ShaderLib/AS_EARTHATOM_VERT.glsl';
 import AS_EARTHATOM_FRAG from './AS_ShaderLib/AS_EARTHATOM_FRAG.glsl';
 
+
+import AS_PLANETSURF_VERT from './AS_ShaderLib/AS_PLANETSURF_VERT.glsl';
+import AS_PLANETSURF_FRAG from './AS_ShaderLib/AS_PLANETSURF_FRAG.glsl';
+
+import AS_PLANETATOM_VERT from './AS_ShaderLib/AS_PLANETATOM_VERT.glsl';
+import AS_PLANETATOM_FRAG from './AS_ShaderLib/AS_PLANETATOM_FRAG.glsl';
+
 //////////////////////////////////////////////////////
 
 export var ShaderChunk = {
@@ -221,6 +228,13 @@ export var ShaderChunk = {
 
 	AS_EARTHATOM_VERT: AS_EARTHATOM_VERT,
 	AS_EARTHATOM_FRAG: AS_EARTHATOM_FRAG,
+
+
+	AS_PLANETSURF_VERT: AS_PLANETSURF_VERT,
+	AS_PLANETSURF_FRAG: AS_PLANETSURF_FRAG,
+
+	AS_PLANETATOM_VERT: AS_PLANETATOM_VERT,
+	AS_PLANETATOM_FRAG: AS_PLANETATOM_FRAG,
 
 
 	/////////////////////////////////////////////////////
