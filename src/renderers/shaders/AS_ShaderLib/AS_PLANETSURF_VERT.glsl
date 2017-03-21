@@ -98,11 +98,11 @@ void main() {
 	float fSampleAngle;
 	if(bCameraAbove)
 	{
-		fSampleAngle = dot(-v3Ray, v3Pos) / vec3(fStartHeight);
+		fSampleAngle = dot(-v3Ray, v3Pos) / fStartHeight;
 	}
 	else
 	{
-		fSampleAngle = dot(v3Ray, v3Pos) / vec3(fStartHeight);
+		fSampleAngle = dot(v3Ray, v3Pos) / fStartHeight;
 	}
 	
 
@@ -148,8 +148,8 @@ void main() {
 		fDepth *= fKr4PI;
 
 		// Calculate the attenuation factor for the sample ray
-		v3Attenuation = exp(vec3(-fDepth.x) * v3InvWavelength - vec3(fDepth.xxx));
-		v3FrontColor += vec3(fDensity.x) * v3Attenuation;
+		v3Attenuate = exp(vec3(-fDepth) * v3InvWavelength - vec3(fDepth));
+		v3FrontColor += vec3(fDensity) * v3Attenuate;
 
 		// Move the position to the center of the next sample ray
 		v3SamplePoint += v3SampleRay;
