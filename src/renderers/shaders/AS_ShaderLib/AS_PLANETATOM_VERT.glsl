@@ -36,9 +36,7 @@ void main() {
 	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
 	vWorldPosition = worldPosition.xyz;//? vec3
 
-	vUv = uv;
-	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );// = pos
-	vT0 = v3CameraPos - v3Pos;  // -v3Ray
+	
 
 	//////////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +52,11 @@ void main() {
 	vec3 v3Ray = v3Pos - v3CameraPos;
 	float fFar = length(v3Ray);
 	v3Ray /= fFar;
+
+
+	vUv = uv;
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );// = pos
+	vT0 = v3CameraPos - v3Pos;  // -v3Ray
 	
 	// Calculate the closest intersection of the ray with the outer atmosphere (which is the near point of the ray passing through the atmosphere)
 	float fNear = getNearIntersection(v3CameraPos, v3Ray, fCameraHeight2, fOuterRadius2);
@@ -82,7 +85,7 @@ void main() {
 	}
 	else//Camera outside atmosphere
 	{
-		v3Start = v3CameraPos + v3Ray * fNear; // Move the camera up to the near intersection point
+		v3Start = v3CameraPos + v3Ray * vec3(fNear); // Move the camera up to the near intersection point
 		fFar -= fNear; 
 	}
 
@@ -158,8 +161,8 @@ void main() {
 		fDepth *= fKr4PI;
 
 		// Calculate the attenuation factor for the sample ray
-		v3Attenuation = exp(vec3(-fDepth.x) * v3InvWavelength - vec3(fDepth.xxx));
-		v3FrontColor += vec3(fDensity.x) * v3Attenuation;
+		v3Attenuate = exp(vec3(-fDepth) * v3InvWavelength - vec3(fDepth));
+		v3FrontColor += vec3(fDensity) * v3Attenuate;
 
 		// Move the position to the center of the next sample ray
 		v3SamplePoint += v3SampleRay;
