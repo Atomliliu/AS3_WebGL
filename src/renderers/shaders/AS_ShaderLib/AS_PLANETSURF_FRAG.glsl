@@ -1,4 +1,4 @@
-//#include <as_common>
+#include <as_common>
 
 uniform samplerCube tCube;
 uniform float _ESun;
