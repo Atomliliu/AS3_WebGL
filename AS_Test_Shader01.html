@@ -68,7 +68,7 @@
 			
 
 			var m_fInnerRadius = 10.0;           // Radius of the ground sphere 1:1.025
-		    var m_fOuterRadius = 10.25;
+		    var m_fOuterRadius = 11.25;
 
 		    ///////////////////////////////////////////////
 		    var m_nSamples = 16;
@@ -153,10 +153,12 @@
 				planet = new THREE.SphereGeometry( m_fInnerRadius, 60, 40 );
 				atmosphere = new THREE.SphereGeometry( m_fOuterRadius, 60, 40 );
 
-				shaderPlanet = THREE.ShaderLib[ "AS_EARTHSURF" ];
+				shaderPlanet = THREE.ShaderLib[ "AS_PLANETSURF" ];
+				//shaderPlanet = THREE.ShaderLib[ "AS_EARTHSURF" ];
 				uniformsPlanet = THREE.UniformsUtils.clone( shaderPlanet.uniforms );
 
-				shaderAtom = THREE.ShaderLib[ "AS_EARTHATOM" ];
+				shaderAtom = THREE.ShaderLib[ "AS_PLANETATOM" ];
+				//shaderAtom = THREE.ShaderLib[ "AS_EARTHATOM" ];
 				uniformsAtom = THREE.UniformsUtils.clone( shaderAtom.uniforms );
 
 				setupPlanet();
@@ -164,6 +166,7 @@
 				//uniforms.v3CamPos.value = camera.position;
 
 				uniformsPlanet.nSamples.value = m_nSamples;
+				//uniformsPlanet.nDepthSamples.value = m_nSamples;
 				uniformsPlanet.v3Translate.value = planetShaderInfo.v3Translate;
 				uniformsPlanet.v3LightDir.value = planetShaderInfo.v3LightDir;
 				uniformsPlanet.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;
@@ -186,6 +189,7 @@
 
 
 				uniformsAtom.nSamples.value = m_nSamples;
+				//uniformsAtom.nDepthSamples.value = m_nSamples;
 				uniformsAtom.v3Translate.value = planetShaderInfo.v3Translate;
 				uniformsAtom.v3LightDir.value = planetShaderInfo.v3LightDir;
 				uniformsAtom.v3InvWavelength.value = planetShaderInfo.v3InvWavelength;
