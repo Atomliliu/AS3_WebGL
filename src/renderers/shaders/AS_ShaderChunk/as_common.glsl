@@ -485,7 +485,7 @@ float SetEV(float fEV){
 // https://www.shadertoy.com/view/4sX3Rs
 //-----------------------------------------------------
 
-
+/*
 vec3 lensFlare( const in vec2 uv, const in vec2 pos) {
 	vec2 main = uv-pos;
 	vec2 uvd = uv*(length(uv));
@@ -511,4 +511,34 @@ vec3 lensFlare( const in vec2 uv, const in vec2 pos) {
 	c+=vec3(f0);
 	
 	return c;
+}
+*/
+
+
+float glare(vec2 uv, vec2 pos, float size)
+{
+    vec2 main = uv-pos;
+	
+	float ang = atan(main.y, main.x);
+	float dist=length(main); dist = pow(dist,.1);
+	
+	float f0 = 1.0/(length(uv-pos)*(1.0/size*16.0)+1.0);
+    
+    //return f0+f0*(sin((ang)*8.0)*.2+dist*.1+.9);
+    return f0;
+}
+
+vec3 flare(vec2 uv, vec2 pos, float dist, float size)
+{
+    pos = GetDistOffset(uv, pos);
+    
+    float r = max(0.01-pow(length(uv+(dist-.05)*pos),2.4)*(1./(size*2.)),.0)*6.0;
+	float g = max(0.01-pow(length(uv+ dist     *pos),2.4)*(1./(size*2.)),.0)*6.0;
+	float b = max(0.01-pow(length(uv+(dist+.05)*pos),2.4)*(1./(size*2.)),.0)*6.0;
+    
+    return vec3(r,g,b);
+}
+vec3 flare(vec2 uv, vec2 pos, float dist, float size, vec3 color)
+{
+    return flare(uv, pos, dist, size)*color;
 }
