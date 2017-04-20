@@ -497,6 +497,9 @@ vec3 lensFlare( const in vec2 uv, const in vec2 pos) {
 	float f2 = max(1.0/(1.0+32.0*pow(length(uvd+0.8*pos),2.0)),.0)*00.25;
 	float f22 = max(1.0/(1.0+32.0*pow(length(uvd+0.85*pos),2.0)),.0)*00.23;
 	float f23 = max(1.0/(1.0+32.0*pow(length(uvd+0.9*pos),2.0)),.0)*00.21;
+
+	x = pow(length(uvd+0.9*pos),2.0)
+	float f23 = max(1.0/(1.0+32.0*x),0.0)*0.21;
 	
 	vec2 uvx = mix(uv,uvd,-0.5);
 	
@@ -513,6 +516,23 @@ vec3 lensFlare( const in vec2 uv, const in vec2 pos) {
 	return c;
 }
 */
+#define ORB_FLARE_COUNT	6
+#define DISTORTION_BARREL		1.0
+
+vec2 GetDistOffset(vec2 uv, vec2 pxoffset)
+{
+    vec2 tocenter = uv.xy;
+    vec3 prep = normalize(vec3(tocenter.y, -tocenter.x, 0.0));
+    
+    float angle = length(tocenter.xy)*2.221*DISTORTION_BARREL;
+    vec3 oldoffset = vec3(pxoffset,0.0);
+    
+    vec3 rotated = oldoffset * cos(angle) + cross(prep, oldoffset) * sin(angle) + prep * dot(prep, oldoffset) * (1.0-cos(angle));
+    
+    return rotated.xy;
+}
+
+//Glare 
 
 
 float glare(vec2 uv, vec2 pos, float size)
@@ -528,17 +548,62 @@ float glare(vec2 uv, vec2 pos, float size)
     return f0;
 }
 
+//Flare
+
 vec3 flare(vec2 uv, vec2 pos, float dist, float size)
 {
     pos = GetDistOffset(uv, pos);
     
-    float r = max(0.01-pow(length(uv+(dist-.05)*pos),2.4)*(1./(size*2.)),.0)*6.0;
-	float g = max(0.01-pow(length(uv+ dist     *pos),2.4)*(1./(size*2.)),.0)*6.0;
-	float b = max(0.01-pow(length(uv+(dist+.05)*pos),2.4)*(1./(size*2.)),.0)*6.0;
+    float r = max(0.01-pow(length(uv+(dist-0.05)*pos),2.4)*(1.0/(size*2.0)),0.0)*6.0;
+	float g = max(0.01-pow(length(uv+ dist     *pos),2.4)*(1.0/(size*2.0)),0.0)*6.0;
+	float b = max(0.01-pow(length(uv+(dist+0.05)*pos),2.4)*(1.0/(size*2.0)),0.0)*6.0;
     
     return vec3(r,g,b);
 }
 vec3 flare(vec2 uv, vec2 pos, float dist, float size, vec3 color)
 {
     return flare(uv, pos, dist, size)*color;
+}
+
+
+//Orb
+
+vec3 orb(vec2 uv, vec2 pos, float dist, float size)
+{
+    vec3 c = vec3(0.0);
+    /*c += flare(uv,pos,dist      ,3.0*size,vec3(1.0,0.8,0.5));
+    c += flare(uv,pos,dist+.1   ,2.0*size,vec3(1.0,0.9,0.8));
+    c += flare(uv,pos,dist+.15  ,1.5*size);
+    c += flare(uv,pos,dist+.155 ,1.25*size,vec3(0.8,0.9,1.0));
+    c += flare(uv,pos,dist+.1555,1.125*size,vec3(0.5,0.8,1.0));*/
+    
+    for(int i=0; i<ORB_FLARE_COUNT; i++)
+    {
+        float j = float(i+1);
+        float offset = j/(j+1.);
+        float colOffset = j/float(ORB_FLARE_COUNT*2);
+        
+        c += flare(uv,pos,dist+offset, size/(j+.1), vec3(1.0-colOffset, 1.0, 0.5+colOffset));
+    }
+    
+    c += flare(uv,pos,dist+.5, 4.0*size, vec3(1.0))*4.0;
+    
+    return c/4.0;
+}
+vec3 orb(vec2 uv, vec2 pos, float dist, float size, vec3 color)
+{
+    return orb(uv,pos,dist,size)*color;
+}
+
+//Ring
+
+vec3 ring(vec2 uv, vec2 pos, float dist)
+{
+    vec2 uvd = uv*(length(uv));
+    
+    float r = max(1.0/(1.0+32.0*pow(length(uvd+(dist-.05)*pos),2.0)),.0)*00.25;
+	float g = max(1.0/(1.0+32.0*pow(length(uvd+ dist     *pos),2.0)),.0)*00.23;
+	float b = max(1.0/(1.0+32.0*pow(length(uvd+(dist+.05)*pos),2.0)),.0)*00.21;
+    
+    return vec3(r,g,b);
 }
